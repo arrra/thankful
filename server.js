@@ -1,25 +1,26 @@
 var _allPosts = [
-	new Post("I'm thankful for code 1"),
-	new Post("I'm thankful for code 2"),
-	new Post("I'm thankful for code 3")
-]; // Local array of posts
+new Post("I'm thankful for code 1"),
+    new Post("I'm thankful for code 2"),
+    new Post("I'm thankful for code 3")
+    ]; // Local array of posts
 
-function Post(text) {
-	this.text = text;
-}
+    function Post(text) {
+	    this.text = text;
+    }
 
 var http = require('http'),
     hogan = require('hogan.js'),
-       fs = require('fs'),
-       url = require('url'),
-	qs = require('querystring');
+    fs = require('fs'),
+    url = require('url'),
+    qs = require('querystring');
 
 var server = http.createServer();
 server.on('request',function(req,res){
 	var pathName = url.parse(req.url).pathname;//url.parse returns object and get propert "pathname"
 
-	
+
 	if( pathName == '/'){
+
 		fs.readFile('index.html',{encoding:'utf8'},function(err,contents){
 			if(err){
 				throw err; 
@@ -30,7 +31,9 @@ server.on('request',function(req,res){
 			res.setHeader('Content-Type','text/html');
 			res.end(renderedHTML);
 		});
+
 	} else if (pathName == '/search') {
+
 		var body = '';
 		req.on('data',function(data){
 			body += data;	
@@ -41,9 +44,28 @@ server.on('request',function(req,res){
 			res.writeHead(302,{'Location':'/'});
 			res.end();
 		});
-	}else{
+
+	}else if(pathName == '/remove') {
+
+		var bodyTwo = '';
+		req.on('data',function(data){
+			bodyTwo += data;
+		});
+		req.on('end',function(){
+			var deletePost = qs.parse(bodyTwo).removePost;
+			for(var i = 0; i < _allPosts.length;i++){
+				if(i == deletePost)
+			_allPosts.splice(i,1);
+			}
+			res.writeHead(302,{'Location':'/'});
+			console.log(_allPosts)
+			res.end();
+		});
+
+	} else {
 		res.end();
 	}
 });
+
 server.listen(8080);
- 
+
