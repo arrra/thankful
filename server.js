@@ -1,9 +1,9 @@
 var _allPosts = [
-    ]; // Local array of posts
+]; // Local array of posts
 
 
-    var _completedPosts = [
-    ];
+var _completedPosts = [
+];
 
 function Complpost(text){
 	this.text = text;
