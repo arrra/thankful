@@ -1,12 +1,18 @@
 var _allPosts = [
-new Post("I'm thankful for code 1"),
-    new Post("I'm thankful for code 2"),
-    new Post("I'm thankful for code 3")
     ]; // Local array of posts
 
-    function Post(text) {
-	    this.text = text;
-    }
+
+    var _completedPosts = [
+    ];
+
+function Complpost(text){
+	this.text = text;
+}       
+
+
+function Post(text) {
+	this.text = text;
+}
 
 var http = require('http'),
     hogan = require('hogan.js'),
@@ -15,6 +21,7 @@ var http = require('http'),
     qs = require('querystring');
 
 var server = http.createServer();
+
 server.on('request',function(req,res){
 	var pathName = url.parse(req.url).pathname;//url.parse returns object and get propert "pathname"
 
@@ -27,7 +34,7 @@ server.on('request',function(req,res){
 				return ; 
 			}
 			var template = hogan.compile(contents);
-			var renderedHTML = template.render({posts: _allPosts});
+			var renderedHTML = template.render({posts: _allPosts,completed: _completedPosts});
 			res.setHeader('Content-Type','text/html');
 			res.end(renderedHTML);
 		});
@@ -54,11 +61,14 @@ server.on('request',function(req,res){
 		req.on('end',function(){
 			var deletePost = qs.parse(bodyTwo).removePost;
 			for(var i = 0; i < _allPosts.length;i++){
-				if(i == deletePost)
-			_allPosts.splice(i,1);
+				if(i == deletePost){
+					var completedItem =_allPosts[i];//get item to remove
+					_completedPosts.push(completedItem);//push removed item
+					_allPosts.splice(i,1);
+
+				}
 			}
 			res.writeHead(302,{'Location':'/'});
-			console.log(_allPosts)
 			res.end();
 		});
 
