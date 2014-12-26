@@ -1,13 +1,32 @@
 var _allPosts = []; // Local array of posts
 
-var _completedPosts = [];//Local array of completed post
+function getIncompletePosts() {
+  return _allPosts.filter(function(post){
+    return post.completed === false;
+  });
+}
 
-function Complpost(text){
-	this.text = text;
-}       
+function getCompletePosts() {
+  return _allPosts.filter(function(post){
+    return post.completed === true;
+  });
+}
 
+function markAsCompleted(uid) {
+  for (var i = 0; i < _allPosts.length; i++) {
+    var post = _allPosts[i];
+    if (post.uid == uid) {
+      post.completed = true;
+      return;
+    }
+  }
+}
+
+var _nextPostUid = 1;
 function Post(text) {
+  this.uid = _nextPostUid++;
 	this.text = text;
+  this.completed = false;
 }
 
 var http = require('http'),
@@ -24,15 +43,17 @@ server.on('request',function(req,res){
 
 		fs.readFile('index.html',{encoding:'utf8'},function(err,contents){
 			if(err){
-				throw err; 
-				return ; 
+				throw err;
+				return ;
 			}
 			var template = hogan.compile(contents);
+
 			var renderedHTML = template.render({
-				posts: _allPosts,
-			    completed: _completedPosts,
+          posts: getIncompletePosts(),
+			    completed: getCompletePosts(),
 			    noPosts: _allPosts.length == 0//dynamiclly updates and print"no "post"
 			});
+
 			res.setHeader('Content-Type','text/html');
 			res.end(renderedHTML);
 		});
@@ -41,10 +62,10 @@ server.on('request',function(req,res){
 
 		var body = '';
 		req.on('data',function(data){
-			body += data;	
+			body += data;
 		});
 		req.on('end',function(){
-			var postText = qs.parse(body).search;	
+			var postText = qs.parse(body).search;
 			_allPosts.push(new Post(postText));
 			res.writeHead(302,{'Location':'/'});
 			res.end();
@@ -57,14 +78,9 @@ server.on('request',function(req,res){
 			bodyTwo += data;
 		});
 		req.on('end',function(){
-			var deletePost = qs.parse(bodyTwo).removePost;
-			for(var i = 0; i < _allPosts.length;i++){
-				if(i == deletePost){
-					var completedItem =_allPosts[i];//get item to remove
-					_completedPosts.push(completedItem);//push removed item
-					_allPosts.splice(i,1);
-				}
-			}
+			var postIndex = qs.parse(bodyTwo).removePost;
+      markAsCompleted(postIndex);
+
 			res.writeHead(302,{'Location':'/'});
 			res.end();
 		});
